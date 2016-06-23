@@ -7,10 +7,28 @@
   },
   "author": "Tim Sebastian <tim.sebastian@gmail.com>",
   "license": "MIT",
+  "keywords": [
+    "Typescript",
+    "TypeScript",
+    "CSS Modules",
+    "CSSModules",
+    "CSS Modules typings",
+    "Webpack",
+    "typescript webpack typings",
+    "css modules webpack typings"
+  ],
   "dependencies": {
     "graceful-fs": "4.1.4",
     "webpack-sources": "0.1.2"
   },
   "devDependencies": {
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jimdo/typings-for-css-modules-plugin.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Jimdo/typings-for-css-modules-plugin/issues"
+  },
+  "homepage": "https://github.com/Jimdo/typings-for-css-modules-plugin#readme"
 }
