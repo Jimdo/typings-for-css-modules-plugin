@@ -126,7 +126,6 @@ function writeCssModulesToFile(cssModuleDefinition) {
     var dirName = path.dirname(resource);
     var baseName = path.basename(resource);
     var filename = path.join(dirName, `${baseName}.d.ts`);
-    console.log(filename, baseName);
     var interfaceName = filenameToInterfaceName(baseName);
     var fileContent = cssModuleToTypescriptInterface(interfaceName, definition);
     return writeToFile(filename, fileContent).then(() => {
