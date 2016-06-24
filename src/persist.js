@@ -11,11 +11,4 @@ const writeToFile = (filename, content) => {
   });
 };
 
-
-const writeCssModuleToFileAndResolveFilename = (filename, fileContent) => {
-  return writeToFile(filename, fileContent).then(() => {
-    return filename;
-  });
-};
-
-export default writeCssModuleToFileAndResolveFilename;
+export default writeToFile;

@@ -12,7 +12,6 @@ const cssModuleToTypescriptInterfaceProperties = (cssModuleObject, indent = '  '
     .join('\n');
 };
 
-
 export const filenameToTypingsFilename = (filename) => {
   const dirName = path.dirname(filename);
   const baseName = path.basename(filename);
