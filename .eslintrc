@@ -29,6 +29,10 @@
     ],
     "no-var": [
       "error"
+    ],
+    "comma-dangle": [
+      "error",
+      "always"
     ]
   }
 }
