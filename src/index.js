@@ -155,7 +155,7 @@ function cssModuleToTypescriptInterface (name, cssModule) {
 `export interface ${name} {
 ${cssModuleToTypescriptInterfaceProperties(cssModule)}
 }
-declare var styles: ${name};
+declare const styles: ${name};
 
 export default styles;
 `
