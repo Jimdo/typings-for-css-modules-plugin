@@ -21,6 +21,36 @@ webpackConfig.plugins = [
 ]
 ```
 
+## Example
+
+Imagine you have a file `~/my-project/src/component/MyComponent/component.scss` in your project with the following content:
+```
+.some-class {
+  // some styles
+  &.someOtherClass {
+    // some other styles
+  }
+  &-sayWhat {
+    // more styles
+  }
+}
+```
+
+Adding the `typings-for-css-modules-plugin` will generate a file `~/my-project/src/component/MyComponent/mycomponent.scss.d.ts` that has the following content:
+```
+export interface IMyComponentScss {
+  'some-class': string;
+  'someOtherClass': string;
+  'some-class-sayWhat': string;
+}
+declare const styles: IMyComponentScss;
+
+export default styles;
+```
+
+### Example in Visual Studio Code
+![typed-css-modules](https://cloud.githubusercontent.com/assets/749171/16340497/c1cb6888-3a28-11e6-919b-f2f51a282bba.gif)
+
 ### Options
 
 The Plugin accepts one parameter - an `options`-Object.
