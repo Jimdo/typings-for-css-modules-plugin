@@ -4,6 +4,10 @@
     "node": true
   },
   "extends": "eslint:recommended",
+  "parser": "babel-eslint",
+  "plugins": [
+    "babel"
+  ],
   "parserOptions": {
     "sourceType": "module"
   },
@@ -33,6 +37,9 @@
     "comma-dangle": [
       "error",
       "always"
+    ],
+    "no-unused-vars": [
+      2, {"vars": "all", "args": "after-used"}
     ]
   }
 }
