@@ -18,9 +18,9 @@ export const filenameToTypingsFilename = (filename) => {
   return path.join(dirName, `${baseName}.d.ts`);
 };
 
-export const generateInterface = (cssModuleObject, filename) => {
+export const generateInterface = (cssModuleObject, filename, indent) => {
   const interfaceName = filenameToInterfaceName(filename);
-  const interfaceProperties = cssModuleToTypescriptInterfaceProperties(cssModuleObject);
+  const interfaceProperties = cssModuleToTypescriptInterfaceProperties(cssModuleObject, indent);
   return (
 `export interface ${interfaceName} {
 ${interfaceProperties}

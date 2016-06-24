@@ -12,6 +12,7 @@ import persistToFile from './persist';
 export default class TypingsForCssModulesPlugin {
   constructor (options = {}) {
     this.verbose = options.verbose;
+    this.indent = options.indent;
     this.moduleCache = {};
   }
 
@@ -132,7 +133,7 @@ export default class TypingsForCssModulesPlugin {
         rules,
       } = cssModuleDefinition;
       const typingsFilename = filenameToTypingsFilename(resource);
-      const typingsContent = generateInterface(rules, resource);
+      const typingsContent = generateInterface(rules, resource, this.indent);
       try {
         await this.writeTypingsToFile(typingsFilename, typingsContent);
       } catch (err) {
