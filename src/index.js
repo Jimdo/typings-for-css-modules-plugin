@@ -26,7 +26,7 @@ export default class TypingsForCssModulesPlugin {
     console.error(...msg);
   }
 
-  async rebuildModule (compilation, mod) {
+  rebuildModule (compilation, mod) {
     return new Promise(function rebuildPromise(resolve, reject) {
       compilation.rebuildModule(mod, (err) => {
         if (err) {
@@ -64,54 +64,50 @@ export default class TypingsForCssModulesPlugin {
     return cssModules.filter((cssModule)=> this.wasModuleUpdated(cssModule));
   }
 
-  async extractCssModuleDefintion (cssModule, compilation) {
+  extractCssModuleDefintion (cssModule, compilation) {
     const oldLoaders = cssModule.loaders;
     const newLoaders = removeLoadersBeforeCssLoader(oldLoaders);
     // we need the output of the css loader so we need to rerender this module
     // but remove all loaders till the css-loader before in order to get the desired output
     cssModule.loaders = newLoaders;
-    try {
-      await this.rebuildModule(compilation, cssModule);
-    } catch (err) {
+    return this.rebuildModule(compilation, cssModule).then(() => {
+      const cssModuleRules = extractCssModuleFromSource(cssModule._source.source());
+      const cssModuleDefinition = {
+        resource: cssModule.resource,
+        id: cssModule.id,
+        rules: cssModuleRules,
+      };
+      this.log(`TypingsForCssModulesPlugin - extracted definition for ${cssModule.resource}`);
+
+      cssModule.loaders = oldLoaders;
+      return this.rebuildModule(compilation, cssModule).then(() => {
+
+        // we have to take the `original` hash of the file when its rendered with all loaders attached
+        cssModuleDefinition.hash = cssModule.getSourceHash();
+
+        return cssModuleDefinition;
+      }, (err)=> {
+        this.logError(
+          `TypingsForCssModulesPlugin - [${cssModule.resource}] failed to rerender Module. Your output might be broken - consider retriggering webpack.`
+          , err
+        );
+      });
+    }, (err)=> {
       this.logError(
         `TypingsForCssModulesPlugin - [${cssModule.resource}] failed to extract CSS Module Definitions. Skip typing extraction - trying to commence...`,
         err
       );
-      return;
-    }
-
-    const cssModuleRules = extractCssModuleFromSource(cssModule._source.source());
-    const cssModuleDefinition = {
-      resource: cssModule.resource,
-      id: cssModule.id,
-      rules: cssModuleRules,
-    };
-    this.log(`TypingsForCssModulesPlugin - extracted definition for ${cssModule.resource}`);
-
-    cssModule.loaders = oldLoaders;
-    try {
-      await this.rebuildModule(compilation, cssModule);
-    } catch (err) {
-      this.logError(
-        `TypingsForCssModulesPlugin - [${cssModule.resource}] failed to rerender Module. Your output might be broken - consider retriggering webpack.`
-        , err
-      );
-    }
-
-    // we have to take the `original` hash of the file when its rendered with all loaders attached
-    cssModuleDefinition.hash = cssModule.getSourceHash();
-
-    return cssModuleDefinition;
+    });
   }
 
-  async retrieveCssModulesDefinitions (cssModules, compilation) {
-    return Promise.all(cssModules.map(async (cssModule)=>  {
-      return await this.extractCssModuleDefintion(cssModule, compilation);
+  retrieveCssModulesDefinitions (cssModules, compilation) {
+    return Promise.all(cssModules.map((cssModule)=>  {
+      return this.extractCssModuleDefintion(cssModule, compilation);
     }));
   }
 
-  async writeTypingsToFile (typingsFilename, typingsContent) {
-    await persistToFile(typingsFilename, typingsContent);
+  writeTypingsToFile (typingsFilename, typingsContent) {
+    persistToFile(typingsFilename, typingsContent);
   }
 
   cacheCssModule (cssModuleDefinition) {
@@ -126,8 +122,8 @@ export default class TypingsForCssModulesPlugin {
     };
   }
 
-  async persistCssModules (cssModuleDefinitions) {
-    return Promise.all(cssModuleDefinitions.map(async (cssModuleDefinition) => {
+  persistCssModules (cssModuleDefinitions) {
+    return Promise.all(cssModuleDefinitions.map((cssModuleDefinition) => {
       const {
         resource,
         rules,
@@ -135,7 +131,7 @@ export default class TypingsForCssModulesPlugin {
       const typingsFilename = filenameToTypingsFilename(resource);
       const typingsContent = generateInterface(rules, resource, this.indent);
       try {
-        await this.writeTypingsToFile(typingsFilename, typingsContent);
+        this.writeTypingsToFile(typingsFilename, typingsContent);
       } catch (err) {
         this.logError(
           `TypingsForCssModulesPlugin - failed write typings to ${typingsFilename}`,
@@ -148,7 +144,7 @@ export default class TypingsForCssModulesPlugin {
   }
 
   apply (compiler) {
-    compiler.plugin('after-compile', async (compilation, callback) => {
+    compiler.plugin('after-compile', (compilation, callback) => {
       // only get modules that are loaded via css loader
       const cssModules = filterCssModules(compilation.modules);
       // if no module is found, skip it
@@ -165,24 +161,21 @@ export default class TypingsForCssModulesPlugin {
         return callback();
       }
 
-      let cssModuleDefinitions;
-      try {
-        cssModuleDefinitions = await this.retrieveCssModulesDefinitions(dirtyCssModules, compilation);
-      } catch (err) {
+      this.retrieveCssModulesDefinitions(dirtyCssModules, compilation).then((cssModuleDefinitions) => {
+        this.log('TypingsForCssModulesPlugin - extracted all typings. Proceeding to asset writing stage...');
+
+        try {
+          this.persistCssModules(cssModuleDefinitions);
+          this.log('TypingsForCssModulesPlugin - all typings updated');
+        } catch (err) {
+          this.logError('TypingsForCssModulesPlugin - failed to write all typings', err);
+        } finally {
+          callback();
+        }
+      }, (err) => {
         this.logError('TypingsForCssModulesPlugin - something went wrong during the extraction phase. Proceeding to asset writing stage...', err);
         return callback();
-      }
-
-      this.log('TypingsForCssModulesPlugin - extracted all typings. Proceeding to asset writing stage...');
-
-      try {
-        await this.persistCssModules(cssModuleDefinitions);
-        this.log('TypingsForCssModulesPlugin - all typings updated');
-      } catch (err) {
-        this.logError('TypingsForCssModulesPlugin - failed to write all typings', err);
-      } finally {
-        callback();
-      }
+      });
     });
   }
 }
