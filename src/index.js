@@ -110,8 +110,8 @@ export default class TypingsForCssModulesPlugin {
     }));
   }
 
-  async writeTypingsToFile (typingsFilename, typingsContent) {
-    await persistToFile(typingsFilename, typingsContent);
+  writeTypingsToFile (typingsFilename, typingsContent) {
+    persistToFile(typingsFilename, typingsContent);
   }
 
   cacheCssModule (cssModuleDefinition) {
@@ -126,8 +126,8 @@ export default class TypingsForCssModulesPlugin {
     };
   }
 
-  async persistCssModules (cssModuleDefinitions) {
-    return Promise.all(cssModuleDefinitions.map(async (cssModuleDefinition) => {
+  persistCssModules (cssModuleDefinitions) {
+    return Promise.all(cssModuleDefinitions.map((cssModuleDefinition) => {
       const {
         resource,
         rules,
@@ -135,7 +135,7 @@ export default class TypingsForCssModulesPlugin {
       const typingsFilename = filenameToTypingsFilename(resource);
       const typingsContent = generateInterface(rules, resource, this.indent);
       try {
-        await this.writeTypingsToFile(typingsFilename, typingsContent);
+        this.writeTypingsToFile(typingsFilename, typingsContent);
       } catch (err) {
         this.logError(
           `TypingsForCssModulesPlugin - failed write typings to ${typingsFilename}`,
@@ -176,7 +176,7 @@ export default class TypingsForCssModulesPlugin {
       this.log('TypingsForCssModulesPlugin - extracted all typings. Proceeding to asset writing stage...');
 
       try {
-        await this.persistCssModules(cssModuleDefinitions);
+        this.persistCssModules(cssModuleDefinitions);
         this.log('TypingsForCssModulesPlugin - all typings updated');
       } catch (err) {
         this.logError('TypingsForCssModulesPlugin - failed to write all typings', err);
