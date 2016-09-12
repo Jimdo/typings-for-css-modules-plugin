@@ -1,6 +1,6 @@
 {
   "name": "typings-for-css-modules-plugin",
-  "version": "0.0.7",
+  "version": "0.1.0",
   "description": "Generate typings for your CSS-Modules on the fly in webpack",
   "main": "lib/index.js",
   "scripts": {
