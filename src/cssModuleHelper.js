@@ -2,6 +2,10 @@ import path from 'path';
 import vm from 'vm';
 
 const isCssModule = (module) => {
+  if (!module || typeof module.request !== 'string') {
+    return false;
+  }
+
   const extname = path.extname(module.request);
   return /\/css-loader\//.test(module.request) && extname !== '.js';
 };
